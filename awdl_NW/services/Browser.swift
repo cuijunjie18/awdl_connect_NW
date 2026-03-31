@@ -23,7 +23,8 @@ class Browser {
     func startScanning() {
         let bonjourDescriptor = NWBrowser.Descriptor.bonjour(type: serviceType, domain: serviceDomain)
         let parameters = NWParameters()
-        parameters.includePeerToPeer = true  // 对应 includesPeerToPeer = YES
+        parameters.includePeerToPeer = true
+        parameters.requiredInterfaceType = .wifi
                 
         // 创建浏览器实例
         browser = NWBrowser(for: bonjourDescriptor, using: parameters)
@@ -45,6 +46,7 @@ class Browser {
             self?.logger.info("Browse results changed")
         }
         
+        logger.info("Start scanning")
         browser?.start(queue: .main)
     }
     

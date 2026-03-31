@@ -27,8 +27,9 @@ class Advertiser {
             return
         }
         
-        let parameters = NWParameters()
+        let parameters = NWParameters.tcp
         parameters.includePeerToPeer = true
+        parameters.requiredInterfaceType = .wifi
         
         do {
             listener = try NWListener(using: parameters, on: port)
