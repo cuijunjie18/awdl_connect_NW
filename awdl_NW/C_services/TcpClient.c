@@ -7,13 +7,28 @@
 
 #include "TcpClient.h"
 
-int tcp_client_connect(const char *ipv6_address, int port, char* interface_name) {
+int tcp_client_connect(const char *ipv6_address, const char* interface_name, int port) {
     // 创建 socket
     int client_socket = socket(AF_INET6, SOCK_STREAM, 0);
     if (client_socket == -1) {
         perror("[TcpClient] socket() failed");
         return -1;
     }
+
+    // Bind client socket to the specified interface (e.g. awdl0)
+    // On Apple platforms, AWDL is a special P2P interface that requires explicit binding
+    unsigned int ifindex = if_nametoindex(interface_name);
+    if (ifindex == 0) {
+        perror("[TcpClient] if_nametoindex() failed");
+        close(client_socket);
+        return -1;
+    }
+    if (setsockopt(client_socket, IPPROTO_IPV6, IPV6_BOUND_IF, &ifindex, sizeof(ifindex)) < 0) {
+        perror("[TcpClient] setsockopt(IPV6_BOUND_IF) failed");
+        close(client_socket);
+        return -1;
+    }
+    printf("[TcpClient] Bound to interface %s (index %u)\n", interface_name, ifindex);
 
     // 设置服务器地址结构体
     struct sockaddr_in6 server_addr;
@@ -32,6 +47,7 @@ int tcp_client_connect(const char *ipv6_address, int port, char* interface_name)
     // 连接服务器
     if (connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("[TcpClient] connect() failed");
+        close(client_socket);
         return -1;
     }
     

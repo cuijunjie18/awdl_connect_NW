@@ -64,6 +64,15 @@ class Browser {
                 // 3. Get TXT record metadata (custom key-value pairs from advertiser)
                 if case .bonjour(let txtRecord) = result.metadata {
                     self.logger.info("  TXT Record: \(txtRecord.dictionary)")
+                    let dict = txtRecord.dictionary
+                    if let ip = dict["awdl_ipv6"], let interface = dict["awdl_interface"] {
+                        self.logger.info("  Peer's awdl_ipv6: \(ip), awdl_interface: \(interface)")
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            tcp_client_connect(ip, interface, 8888)
+                        }
+                    } else {
+                        self.logger.error("Peer's awdl_ipv6 or awdl_interface not found")
+                    }
                 }
                 
                 // 4. Resolve IP address by creating a connection to the endpoint

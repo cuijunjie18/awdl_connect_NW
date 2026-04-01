@@ -16,6 +16,6 @@
 #include <net/if.h>
 #include <string.h>
 
-int tcp_server_start(int port);
+int tcp_server_start(const char *interface_name, int port);
 
 #endif /* TcpServer_h */

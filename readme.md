@@ -2,7 +2,9 @@
 
 ## 框架
 
-- 网络核心框架：使用了Apple的官方Network框架,代替旧的Foundation中的NW相关api
+- 网络核心框架：
+  - 使用了Apple的官方Network框架,代替旧的Foundation中的NW相关api
+  - 使用了POSIX标准的C调用，用于实现ipv6 TCP通信
 - UI框架：Swift UI
 
 ## 业务流程
@@ -19,6 +21,11 @@ graph TD
     style G fill:#90EE90
     style H fill:#90EE90
 ```
+
+## 目前代码可能存在的问题
+
+- [ ] 获取awdl接口对应的ipv6地址时，认为一定是awdl0接口，这个在某些情况可能会异常
+- [ ] 目前的测试是默认激活了awdl接口，实际上应该等advertiser start后，去动态更新广播的内容(NW框架无法做到)
 
 ## 收获
 

@@ -17,6 +17,6 @@
 #include <net/if.h>
 #include <errno.h>
 
-int tcp_client_connect(const char *ipv6_address, int port, char* interface_name);
+int tcp_client_connect(const char *ipv6_address, const char* interface_name, int port);
 
 #endif /* TcpClient_h */

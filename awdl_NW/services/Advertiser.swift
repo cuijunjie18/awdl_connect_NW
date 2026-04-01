@@ -33,9 +33,12 @@ class Advertiser {
         parameters.requiredInterfaceType = .wifi
         
         var txtData = NWTXTRecord()
-        txtData["version"] = "1.0"
-        txtData["type"] = "awdl"
         txtData["DisplayName"] = "CJJ_debug_iphone"
+        let ipv6WithInterface = NetworkManager.shared.getInterfaceIPv6Addresses(interfaceName: "awdl0")[0]
+        txtData["awdl_ipv6"] = String(ipv6WithInterface.split(separator: "%")[0])
+        txtData["awdl_interface"] = String(ipv6WithInterface.split(separator: "%")[1])
+        
+        NetworkManager.shared.logAWDLIPv6Addresses()
         
         do {
             listener = try NWListener(using: parameters, on: port)
@@ -53,8 +56,6 @@ class Advertiser {
             switch state {
             case .ready:
                 self?.logger.info("Listener state: ready")
-                // AWDL interface is now active, retrieve its IPv6 address
-                NetworkManager.shared.logAWDLIPv6Addresses()
             case .failed:
                 self?.logger.error("Listener state: failed")
             case .cancelled:
@@ -70,7 +71,7 @@ class Advertiser {
         
         listener?.start(queue: .main)
         DispatchQueue.global(qos: .userInitiated).async {
-            tcp_server_start(8888)
+            tcp_server_start("awdl0", 8888)
         }
         logger.info("Started advertising")
     }

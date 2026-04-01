@@ -7,7 +7,7 @@
 
 #include "TcpServer.h"
 
-int tcp_server_start(int port){
+int tcp_server_start(const char *interface_name, int port){
     // 创建 socket
     int server_socket = socket(AF_INET6, SOCK_STREAM, 0);
     if (server_socket == -1) {
@@ -16,8 +16,23 @@ int tcp_server_start(int port){
     }
 
     // 允许重用地址，避免 TIME_WAIT 状态导致 bind 失败
-//     int opt = 1;
-//     setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    int opt = 1;
+    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    // Bind socket to the specified interface (e.g. awdl0)
+    // On Apple platforms, AWDL is a special P2P interface that requires explicit binding
+    unsigned int ifindex = if_nametoindex(interface_name);
+    if (ifindex == 0) {
+        perror("[TcpServer] if_nametoindex() failed");
+        close(server_socket);
+        return -1;
+    }
+    if (setsockopt(server_socket, IPPROTO_IPV6, IPV6_BOUND_IF, &ifindex, sizeof(ifindex)) < 0) {
+        perror("[TcpServer] setsockopt(IPV6_BOUND_IF) failed");
+        close(server_socket);
+        return -1;
+    }
+    printf("[TcpServer] Bound to interface %s (index %u)\n", interface_name, ifindex);
 
     // 设置服务器地址结构体
     struct sockaddr_in6 server_addr;
