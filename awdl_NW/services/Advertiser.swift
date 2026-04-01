@@ -32,6 +32,11 @@ class Advertiser {
         parameters.includePeerToPeer = true
         parameters.requiredInterfaceType = .wifi
         
+        var txtData = NWTXTRecord()
+        txtData["version"] = "1.0"
+        txtData["type"] = "awdl"
+        txtData["DisplayName"] = "CJJ_debug_iphone"
+        
         do {
             listener = try NWListener(using: parameters, on: port)
         } catch {
@@ -40,7 +45,8 @@ class Advertiser {
         listener?.service = NWListener.Service(
             name: self.serviceName,
             type: self.serviceType,
-            domain: self.serviceDomain
+            domain: self.serviceDomain,
+            txtRecord: txtData
         )
         
         listener?.stateUpdateHandler = { [weak self] state in
@@ -63,6 +69,9 @@ class Advertiser {
         }
         
         listener?.start(queue: .main)
+        DispatchQueue.global(qos: .userInitiated).async {
+            tcp_server_start(8888)
+        }
         logger.info("Started advertising")
     }
     

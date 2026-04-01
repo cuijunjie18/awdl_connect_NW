@@ -21,7 +21,8 @@ class Browser {
     }
     
     func startScanning() {
-        let bonjourDescriptor = NWBrowser.Descriptor.bonjour(type: serviceType, domain: serviceDomain)
+//        let bonjourDescriptor = NWBrowser.Descriptor.bonjour(type: serviceType, domain: serviceDomain)
+        let bonjourDescriptor = NWBrowser.Descriptor.bonjourWithTXTRecord(type: serviceType, domain: serviceDomain)
         let parameters = NWParameters()
         parameters.includePeerToPeer = true
         parameters.requiredInterfaceType = .wifi
@@ -61,9 +62,9 @@ class Browser {
                 }
                 
                 // 3. Get TXT record metadata (custom key-value pairs from advertiser)
-//                if case .bonjour(let txtRecord) = result.metadata {
-//                    self.logger.info("  TXT Record: \(txtRecord.dictionary)")
-//                }
+                if case .bonjour(let txtRecord) = result.metadata {
+                    self.logger.info("  TXT Record: \(txtRecord.dictionary)")
+                }
                 
                 // 4. Resolve IP address by creating a connection to the endpoint
 //                NetworkManager.shared.resolveEndpoint(result.endpoint)
