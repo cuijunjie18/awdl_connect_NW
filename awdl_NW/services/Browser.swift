@@ -66,38 +66,12 @@ class Browser {
                 }
                 
                 // 4. Resolve IP address by creating a connection to the endpoint
-//                self.resolveEndpoint(result.endpoint)
+//                NetworkManager.shared.resolveEndpoint(result.endpoint)
             }
         }
         
         logger.info("Start scanning")
         browser?.start(queue: .main)
-    }
-    
-    /// Resolve IP address by connecting to the discovered service endpoint
-    private func resolveEndpoint(_ endpoint: NWEndpoint) {
-        let connection = NWConnection(to: endpoint, using: .tcp)
-        connection.stateUpdateHandler = { [weak self] state in
-            switch state {
-            case .ready:
-                // Once connected, we can get the resolved remote endpoint with IP
-                if let remotePath = connection.currentPath,
-                   let remoteEndpoint = remotePath.remoteEndpoint {
-                    self?.logger.info("Resolved IP: \(remoteEndpoint.debugDescription)")
-                }
-                // Get local address info as well
-                if let localEndpoint = connection.currentPath?.localEndpoint {
-                    self?.logger.info("Local endpoint: \(localEndpoint.debugDescription)")
-                }
-                connection.cancel()
-            case .failed(let error):
-                self?.logger.error("Connection failed: \(error)")
-                connection.cancel()
-            default:
-                break
-            }
-        }
-        connection.start(queue: .main)
     }
     
     func stopScanning() {
