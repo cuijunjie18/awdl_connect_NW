@@ -50,7 +50,7 @@ class Browser {
                 // 1. Get endpoint info (service name, type, domain)
                 switch result.endpoint {
                 case .service(let name, let type, let domain, let interface):
-                    self.logger.info("Found service - name: \(name), type: \(type), domain: \(domain), interface: \(String(describing: interface))")
+                    self.logger.info("Found service - name: \(name), type: \(type), domain: \(domain)")
                 default:
                     self.logger.info("Found endpoint: \(result.endpoint.debugDescription)")
                 }
@@ -61,9 +61,9 @@ class Browser {
                 }
                 
                 // 3. Get TXT record metadata (custom key-value pairs from advertiser)
-                if case .bonjour(let txtRecord) = result.metadata {
-                    self.logger.info("  TXT Record: \(txtRecord.dictionary)")
-                }
+//                if case .bonjour(let txtRecord) = result.metadata {
+//                    self.logger.info("  TXT Record: \(txtRecord.dictionary)")
+//                }
                 
                 // 4. Resolve IP address by creating a connection to the endpoint
 //                NetworkManager.shared.resolveEndpoint(result.endpoint)
