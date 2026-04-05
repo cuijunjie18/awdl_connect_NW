@@ -30,7 +30,7 @@ class Advertiser {
         
         let parameters = NWParameters.tcp
         parameters.includePeerToPeer = true
-        parameters.requiredInterfaceType = .wifi
+        // parameters.requiredInterfaceType = .wifi
         
         var txtData = NWTXTRecord()
         txtData["DisplayName"] = "CJJ_debug_iphone"

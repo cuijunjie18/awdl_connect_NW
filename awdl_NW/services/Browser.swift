@@ -25,7 +25,7 @@ class Browser {
         let bonjourDescriptor = NWBrowser.Descriptor.bonjourWithTXTRecord(type: serviceType, domain: serviceDomain)
         let parameters = NWParameters()
         parameters.includePeerToPeer = true
-        parameters.requiredInterfaceType = .wifi
+        // parameters.requiredInterfaceType = .wifi
                 
         // 创建浏览器实例
         browser = NWBrowser(for: bonjourDescriptor, using: parameters)
