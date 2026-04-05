@@ -5,7 +5,9 @@
 //  Created by junjiecui on 2026/4/3.
 //
 #import "Advertiser.h"
-#include <string.h>
+#import <string.h>
+#import "../utils/NetworkManager.h"
+#include "../services/TcpServer.hpp"
 
 @interface Advertiser () <NSNetServiceDelegate>
 
@@ -49,12 +51,18 @@
         self.publishingService = nil;
     }
     os_log_info(self.logger, "Stopped advertising");
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        TcpServer server = TcpServer(50001);
+        server.start("awdl0");
+    });
 }
 
 #pragma mark - NSNetServiceDelegate
 
 - (void)netServiceDidPublish:(NSNetService *)sender {
     os_log_info(self.logger, "Service published successfully: %@", sender.name);
+    [NetworkManager logAWDLIPv6Addresses];
+//    [sender resolveWithTimeout:5.0]; // 加上才能获取解析结果
 }
 
 - (void)netService:(NSNetService *)sender didNotPublish:(NSDictionary<NSString *, NSNumber *> *)errorDict {

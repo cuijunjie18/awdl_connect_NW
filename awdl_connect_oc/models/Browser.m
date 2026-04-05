@@ -61,7 +61,4 @@
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didNotSearch:(NSDictionary<NSString *, NSNumber *> *)errorDict {
     os_log_error(self.logger, "didNotSearch %@", errorDict);
 }
-
-
-
 @end
