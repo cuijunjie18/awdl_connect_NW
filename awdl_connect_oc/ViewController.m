@@ -7,6 +7,7 @@
 
 #import "ViewController.h"
 #import <Foundation/Foundation.h>
+#import "models/Advertiser.h"
 
 #define Width 200
 #define Height 50
@@ -15,6 +16,7 @@
 
 @property (nonatomic, assign) CGFloat buttonWidth;
 @property (nonatomic, assign) CGFloat buttonHeight;
+@property (nonatomic, strong) Advertiser* advertiser;
 
 @end
 
@@ -26,23 +28,24 @@
     
     self.buttonWidth = Width;
     self.buttonHeight = Height;
+    self.advertiser = [[Advertiser alloc] init];
     
     UIButton* AdvertiserStartButton = [self getBaseButton: @"Advertise start"];
     UIButton* AdvertiserStopButton = [self getBaseButton: @"Advertise stop"];
     UIButton* BrowserStartButton = [self getBaseButton: @"Browser start"];
     UIButton* BrowserStopButton = [self getBaseButton: @"Browser stop"];
     
-    [self.view addSubview: AdvertiserStopButton];
     [self.view addSubview: AdvertiserStartButton];
+    [self.view addSubview: AdvertiserStopButton];
     [self.view addSubview: BrowserStartButton];
     [self.view addSubview: BrowserStopButton];
     
     [AdvertiserStartButton addTarget:self
-    action: @selector(buttonTapped:)
+    action: @selector(buttonForAdvertiseStartTapped:)
     forControlEvents: UIControlEventTouchUpInside];
     
     [AdvertiserStopButton addTarget:self
-    action: @selector(buttonTapped:)
+    action: @selector(buttonForAdvertiseStopTapped:)
     forControlEvents: UIControlEventTouchUpInside];
     
     [BrowserStartButton addTarget:self
@@ -76,6 +79,14 @@
 
 - (void)buttonTapped:(UIButton*) sender {
     NSLog(@"Button's name is %@", sender.currentTitle);
+}
+
+- (void)buttonForAdvertiseStartTapped:(UIButton*) sender {
+    [self.advertiser startAdvertising];
+}
+
+- (void)buttonForAdvertiseStopTapped:(UIButton*) sender {
+    [self.advertiser stopAdvertising];
 }
 
 @end
