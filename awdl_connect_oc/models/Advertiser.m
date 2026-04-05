@@ -7,7 +7,7 @@
 #import "Advertiser.h"
 #import <string.h>
 #import "../utils/NetworkManager.h"
-#include "../services/TcpServer.hpp"
+#include "../services/TcpService.h"
 
 @interface Advertiser () <NSNetServiceDelegate>
 
@@ -42,6 +42,10 @@
     [self.publishingService scheduleInRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
     [self.publishingService publish];
     os_log_info(self.logger, "Started advertising");
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        os_log_info(self.logger, "Tcp server started");
+        tcp_server_start("awdl0", 50001);
+    });
 }
 
 - (void)stopAdvertising {
@@ -51,10 +55,6 @@
         self.publishingService = nil;
     }
     os_log_info(self.logger, "Stopped advertising");
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-        TcpServer server = TcpServer(50001);
-        server.start("awdl0");
-    });
 }
 
 #pragma mark - NSNetServiceDelegate

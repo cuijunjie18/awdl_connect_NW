@@ -6,6 +6,7 @@
 //
 
 #import "Browser.h"
+#include "../services/TcpService.h"
 
 @interface Browser () <NSNetServiceBrowserDelegate>
 
@@ -52,6 +53,7 @@
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didFindService:(NSNetService *)service moreComing:(BOOL)moreComing {
     os_log_info(self.logger, "didFindService %@", service.name);
+    tcp_client_connect("fe80::4452:baff:fed2:89ae", "awdl0", 50001);
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didRemoveService:(NSNetService *)service moreComing:(BOOL)moreComing {
