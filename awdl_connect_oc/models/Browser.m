@@ -8,13 +8,14 @@
 #import "Browser.h"
 #include "../services/TcpService.h"
 
-@interface Browser () <NSNetServiceBrowserDelegate>
+@interface Browser () <NSNetServiceBrowserDelegate, NSNetServiceDelegate>
 
 @property (nonatomic, copy, readonly) NSString *serviceName;
 @property (nonatomic, copy, readonly) NSString *serviceType;
 @property (nonatomic, copy, readonly) NSString *serviceDomain;
 
 @property (nonatomic, strong) NSNetServiceBrowser *serviceBrowser;
+@property (nonatomic, strong) NSNetService *resolvedService;
 @property (nonatomic, assign) os_log_t logger;
 
 @end
@@ -46,21 +47,73 @@
         [self.serviceBrowser stop];
         self.serviceBrowser = nil;
     }
+    if (self.resolvedService) {
+        [self.resolvedService stop];
+        self.resolvedService = nil;
+    }
     os_log_info(self.logger, "Stopped browsing");
 }
 
 #pragma mark - NSNetServiceBrowserDelegate
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didFindService:(NSNetService *)service moreComing:(BOOL)moreComing {
-    os_log_info(self.logger, "didFindService %@", service.name);
-    tcp_client_connect("fe80::4452:baff:fed2:89ae", "awdl0", 50001);
+    os_log_info(self.logger, "didFindService %{public}@", service.name);
+    
+    // Resolve the service to trigger AWDL route establishment and get TXT Record.
+    // This is critical: resolving forces the system to maintain the AWDL route,
+    // which is why NWBrowser (Swift version) works but raw connect() after NSNetServiceBrowser fails.
+    self.resolvedService = service;
+    service.delegate = self;
+    service.includesPeerToPeer = YES;
+    [service resolveWithTimeout:10.0];
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didRemoveService:(NSNetService *)service moreComing:(BOOL)moreComing {
-    os_log_info(self.logger, "didRemoveService %@", service.name);
+    os_log_info(self.logger, "didRemoveService %{public}@", service.name);
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didNotSearch:(NSDictionary<NSString *, NSNumber *> *)errorDict {
     os_log_error(self.logger, "didNotSearch %@", errorDict);
 }
+
+#pragma mark - NSNetServiceDelegate
+
+- (void)netServiceDidResolveAddress:(NSNetService *)sender {
+    os_log_info(self.logger, "Service resolved: %{public}@", sender.name);
+    
+    // Extract AWDL IPv6 address and interface name from TXT Record
+    NSData *txtData = [sender TXTRecordData];
+    if (!txtData) {
+        os_log_error(self.logger, "No TXT Record data available");
+        return;
+    }
+    
+    NSDictionary<NSString *, NSData *> *txtDict = [NSNetService dictionaryFromTXTRecordData:txtData];
+    NSString *ipv6 = nil;
+    NSString *iface = nil;
+    
+    if (txtDict[@"awdl_ipv6"]) {
+        ipv6 = [[NSString alloc] initWithData:txtDict[@"awdl_ipv6"] encoding:NSUTF8StringEncoding];
+    }
+    if (txtDict[@"awdl_interface"]) {
+        iface = [[NSString alloc] initWithData:txtDict[@"awdl_interface"] encoding:NSUTF8StringEncoding];
+    }
+    
+    if (!ipv6 || !iface) {
+        os_log_error(self.logger, "TXT Record missing awdl_ipv6 or awdl_interface");
+        return;
+    }
+    
+    os_log_info(self.logger, "Peer address from TXT: %{public}@%%%{public}@", ipv6, iface);
+    
+    // Dispatch TCP connect to a background thread to avoid blocking the RunLoop.
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        tcp_client_connect([ipv6 UTF8String], [iface UTF8String], 50001);
+    });
+}
+
+- (void)netService:(NSNetService *)sender didNotResolve:(NSDictionary<NSString *, NSNumber *> *)errorDict {
+    os_log_error(self.logger, "Failed to resolve service: %@", errorDict);
+}
+
 @end

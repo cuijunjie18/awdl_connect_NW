@@ -39,6 +39,28 @@
     self.publishingService.delegate = self;
     self.publishingService.includesPeerToPeer = YES;
 
+    // Publish AWDL IPv6 address and interface name via TXT Record,
+    // so the Browser side can dynamically obtain the peer's address (same as Swift version).
+    NSArray<NSString *> *awdlAddresses = [NetworkManager getIPv6AddressesForInterface:@"awdl0"];
+    if (awdlAddresses.count > 0) {
+        NSString *fullAddr = awdlAddresses[0]; // e.g. "fe80::xxxx%awdl0"
+        NSArray<NSString *> *parts = [fullAddr componentsSeparatedByString:@"%"];
+        NSString *ipv6 = parts[0];
+        NSString *iface = (parts.count > 1) ? parts[1] : @"awdl0";
+        
+        NSDictionary *txtDict = @{
+            @"DisplayName": @"CJJ_debug_iphone",
+            @"awdl_ipv6": ipv6,
+            @"awdl_interface": iface
+        };
+        NSData *txtData = [NSNetService dataFromTXTRecordDictionary:
+            [self encodeTXTRecordDictionary:txtDict]];
+        [self.publishingService setTXTRecordData:txtData];
+        os_log_info(self.logger, "TXT Record set: ipv6=%{public}@, interface=%{public}@", ipv6, iface);
+    } else {
+        os_log_error(self.logger, "No AWDL IPv6 address found, TXT Record not set");
+    }
+
     [self.publishingService scheduleInRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
     [self.publishingService publish];
     os_log_info(self.logger, "Started advertising");
@@ -94,7 +116,16 @@
 
 # pragma mark - Private Helpers
 
-// 辅助方法：将 sockaddr 二进制数据转换为 IP 字符串
+// Helper: convert NSDictionary<NSString*, NSString*> to NSDictionary<NSString*, NSData*> for TXT record
+- (NSDictionary<NSString *, NSData *> *)encodeTXTRecordDictionary:(NSDictionary<NSString *, NSString *> *)dict {
+    NSMutableDictionary<NSString *, NSData *> *result = [NSMutableDictionary dictionary];
+    for (NSString *key in dict) {
+        result[key] = [dict[key] dataUsingEncoding:NSUTF8StringEncoding];
+    }
+    return result;
+}
+
+// Helper: convert sockaddr binary data to IP string
 - (NSString *)stringFromAddressData:(NSData *)data {
     struct sockaddr *addr = (struct sockaddr *)data.bytes;
     char host[NI_MAXHOST];
