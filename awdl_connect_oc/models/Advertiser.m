@@ -65,7 +65,7 @@
     // 激活AWDL即可，不需要处理解析结果
     os_log_info(self.logger, "Service resolved successfully");
         
-        // 获取并打印所有解析到的地址（通常包括 AWDL 接口的地址）
+    // 获取并打印所有解析到的地址（通常包括 AWDL 接口的地址）
     NSArray<NSData *> *addresses = [sender addresses];
     for (NSData *addrData in addresses) {
         NSString *ipString = [self stringFromAddressData:addrData];
