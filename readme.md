@@ -33,7 +33,7 @@ graph TD
 
 ## 收获
 
-### 项目awdl连接原理
+### 一、项目awdl连接原理
 
 ```mermaid
 sequenceDiagram
@@ -58,7 +58,7 @@ sequenceDiagram
     B->>A: ✅ ping6 fe80::xxxx%awdl0 成功
 ```
 
-### socket需要绑定awdl接口的原因
+### 二、socket需要绑定awdl接口的原因
 
 两台 Apple 设备通过 AWDL（Apple Wireless Direct Link）协议互相发现，能 ping6 通，但 TCP 连接建立失败（卡在 connect() 调用）。
 
