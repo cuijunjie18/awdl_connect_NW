@@ -78,6 +78,7 @@
 
 #pragma mark - NSNetServiceDelegate
 
+// 该回调会在创建一个 NSNetService 对象时触发，通常是当 NSNetServiceBrowser 发现一个服务时，创建一个 NSNetService 对象。
 - (void)netServiceDidResolveAddress:(NSNetService *)sender {
     os_log_info(self.logger, "Service resolved: %{public}@", sender.name);
     
