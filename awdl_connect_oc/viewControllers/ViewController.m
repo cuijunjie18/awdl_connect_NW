@@ -7,8 +7,8 @@
 
 #import "ViewController.h"
 #import <Foundation/Foundation.h>
-#import "models/Advertiser.h"
-#import "models/Browser.h"
+#import "../models/Advertiser.h"
+#import "../models/Browser.h"
 
 #define Width 200
 #define Height 50

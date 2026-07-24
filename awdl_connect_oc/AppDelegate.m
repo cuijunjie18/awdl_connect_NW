@@ -6,7 +6,7 @@
 //
 
 #import "AppDelegate.h"
-#import "ViewController.h"
+#import "viewControllers/rootViewController.h"
 
 @interface AppDelegate ()
 
@@ -19,7 +19,7 @@
     self.window = [[UIWindow alloc]initWithFrame:[UIScreen mainScreen].bounds];
     
     //创建ViewController
-    ViewController *vc = [[ViewController alloc] init];
+    rootViewController *vc = [[rootViewController alloc] init];
     
     //将此window的根控制器设置为创建的Contoller
     self.window.rootViewController = vc;
